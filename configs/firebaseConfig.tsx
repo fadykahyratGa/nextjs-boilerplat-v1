@@ -1,26 +1,28 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// firebase.ts (or lib/firebase.ts)
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyDwcDRaT3LKm4E97cR985IUHNK6kHcZHMI",
-    authDomain: "apps-e02e4.firebaseapp.com",
-    databaseURL: "https://apps-e02e4-default-rtdb.firebaseio.com",
-    projectId: "apps-e02e4",
-    storageBucket: "apps-e02e4.appspot.com",
-    messagingSenderId: "931728242416",
-    appId: "1:931728242416:web:1450a322782504ce293435",
-    measurementId: "G-D9J6T82264"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!, // or MESURMENT if that's what you used
+  // databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL!, // only if you use Realtime DB
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Prevent re-initialization on hot reload / multiple imports
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-// const analytics = getAnalytics(app);
+
+// Analytics only runs in browser + when supported
+export const analyticsPromise =
+  typeof window !== "undefined"
+    ? isSupported().then((ok) => (ok ? getAnalytics(app) : null))
+    : Promise.resolve(null);
